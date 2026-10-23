@@ -108,10 +108,15 @@ succeeds in persuading the model, and then limit what that can achieve:
 8. **Secret isolation.** `SOCLAAS_API_KEY` is a production environment secret.
    It is held only in the server environment, stored as a Secret-type variable
    at the deployment host, and never given to the client. It has no
-   `NEXT_PUBLIC_` prefix and is read only in `config/runtime.ts` and
-   `operations.ts`, which are `server-only`. The browser only ever calls our
-   route, never the provider, and the route's request body cannot carry
-   configuration. The `Authorization` header is built server-side at the moment
+   `NEXT_PUBLIC_` prefix and is read only through the `server-only`
+   configuration entry point (`src/server/config/`) and the LLM layer
+   (`src/server/llm/`). The browser only ever calls our route, never the
+   provider, and the route's request body cannot carry configuration. The
+   build proves the key stays out of the client: `bun run build` runs
+   `check:isolation` before compiling and `check:isolation:artifacts` after,
+   and the second scans the built browser bundles for the configured secret
+   values. A passing run prints, for example, "Isolation check passed (165
+   client artifacts and application sources)". The `Authorization` header is built server-side at the moment
    of dispatch. The config check also refuses to start if a private key equals
    the publishable key, refuses a live provider key in CI, and refuses the fake
    provider in production. Errors are generic: they never include the prompt,
